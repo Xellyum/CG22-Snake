@@ -109,7 +109,6 @@ public class Main extends Application {
         moveSnake();
 
         checkCollisions();
-
     }
 
 

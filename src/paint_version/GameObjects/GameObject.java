@@ -1,14 +1,14 @@
-package paint_version;
+package paint_version.GameObjects;
 
 public abstract class GameObject {
 
-    int x;
-    int y;
-    int width;
-    int height;
+    public int x;
+    public int y;
+    public int width;
+    public int height;
 
-    Type type;
-    boolean movable;
+    public Type type;
+    public boolean movable;
 
 
     public GameObject(int x, int y, int width, int height, Type type) {
@@ -26,7 +26,8 @@ public abstract class GameObject {
     public enum Type {
         ENVIRONMENT,
         SNAKE,
-        FOOD
+        FOOD,
+        TEXT
     }
 
 }

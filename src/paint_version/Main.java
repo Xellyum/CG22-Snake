@@ -9,6 +9,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import paint_version.GameObjects.GameObject;
 
 import java.util.ArrayList;
 
@@ -21,6 +22,8 @@ public class Main extends Application {
     ArrayList<GameObject> snake = new ArrayList<>();
 
     Point2D movDirection;
+
+    int movSpeed = 50;
 
     @Override
     public void start(Stage stage) {
@@ -49,6 +52,7 @@ public class Main extends Application {
         stage.setTitle("V I P E R");
         stage.show();
 
+        initializeGameObjects();
     }
 
     private void setInputActions(KeyEvent key) {
@@ -104,12 +108,16 @@ public class Main extends Application {
     private void repaintCanvas() {
         for (GameObject gameObject : gameObjects) {
             // TODO - draw on canvas
+            graphics.strokeRect(gameObject.x, gameObject.y, gameObject.width, gameObject.height);
+            System.out.println(gameObject.x);
         }
 
     }
 
     private void initializeGameObjects() {
-
+        gameLoop.start();
+        gameObjects.add(new GameObject(100, 100, 50, 50, GameObject.Type.ENVIRONMENT) {
+        });
 
 
     }
