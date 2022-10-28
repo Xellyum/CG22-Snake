@@ -1,3 +1,5 @@
+package node_version;
+
 import javafx.scene.control.Label;
 
 public class TextObject extends Label {
