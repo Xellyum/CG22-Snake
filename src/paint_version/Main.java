@@ -8,8 +8,11 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import paint_version.GameObjects.Food;
 import paint_version.GameObjects.GameObject;
+import paint_version.GameObjects.SnakeTile;
 
 import java.util.ArrayList;
 
@@ -18,12 +21,16 @@ public class Main extends Application {
     Pane root;
     GraphicsContext graphics;
     AnimationTimer gameLoop;
-    ArrayList<GameObject> gameObjects = new ArrayList<>();
-    ArrayList<GameObject> snake = new ArrayList<>();
+    boolean gamePaused = false;
+
+
+    ArrayList<GameObject> gameObjects;
+    ArrayList<SnakeTile> snake;
 
     Point2D movDirection;
-
     int movSpeed = 50;
+
+    Food food;
 
     @Override
     public void start(Stage stage) {
@@ -33,9 +40,16 @@ public class Main extends Application {
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
+                if (gamePaused) return;
+
+                Settings.UPDATE_DELTA_TIME += 16;
+                if (Settings.UPDATE_DELTA_TIME < 333) return;
+
+                Settings.UPDATE_DELTA_TIME = 0;
                 update();
             }
         };
+        gameLoop.start();
 
         canvas.setWidth(Settings.SCREEN_WIDTH);
         canvas.setHeight(Settings.SCREEN_HEIGHT);
@@ -45,14 +59,13 @@ public class Main extends Application {
 
         root.getChildren().add(canvas);
 
-
         stage.setScene(scene);
         scene.setOnKeyPressed(event -> setInputActions(event));
 
         stage.setTitle("V I P E R");
         stage.show();
 
-        initializeGameObjects();
+        restartGame();
     }
 
     private void setInputActions(KeyEvent key) {
@@ -73,7 +86,7 @@ public class Main extends Application {
                 break;
 
             case ESCAPE:
-                pauseGame();
+                gamePaused = !gamePaused;
                 break;
         }
     }
@@ -82,10 +95,38 @@ public class Main extends Application {
         movDirection = new Point2D(x, y);
     }
 
-    private void pauseGame() {
+    private void initializeGame() {
+        snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 50, 50, 50, GameObject.Type.SNAKE, Color.color(0, 0, 0), null));
+        snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 50, 50, 50, GameObject.Type.SNAKE, snake.get(0).color.brighter(), snake.get(0)));
+        snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 50, 50, 50, GameObject.Type.SNAKE, snake.get(1).color.brighter(), snake.get(1)));
+        snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 50, 50, 50, GameObject.Type.SNAKE, snake.get(2).color.brighter(), snake.get(2)));
+        //snake.add(new SnakeTile(100, 100, 50, 50, GameObject.Type.SNAKE, snake.get(3).color.brighter(), snake.get(3)));
+
+        // add wall
+        gameObjects.add(new GameObject(50, 50, Settings.SCREEN_WIDTH - 100, Settings.SCREEN_HEIGHT- 100, GameObject.Type.ENVIRONMENT, Color.BLACK));
+
+        // add food
+        food = new Food(0, 0, 50, 50, GameObject.Type.FOOD, Color.GREEN);
+        food.changePositionRandom();
+        gameObjects.add(food);
 
     }
 
+    private void restartGame() {
+        // reset movDirection
+        movDirection = new Point2D(0, 0);
+
+        // TODO - reset score
+
+        // reset snake
+        snake = new ArrayList<>();
+
+        // reset gameObjects
+        gameObjects = new ArrayList<>();
+
+        // initialize game
+        initializeGame();
+    }
 
     private void update() {
         moveSnake();
@@ -94,39 +135,71 @@ public class Main extends Application {
     }
 
     private void checkCollisions() {
-        for (GameObject gameObject : snake) {
-            // TODO - check each snake piece for collision with: wall / food / other snake piece
+        SnakeTile snakeHead = snake.get(0);
+
+        // Wall check
+        if (snakeHead.x < 0 + 50
+                || snakeHead.y < 0 + 50
+                || snakeHead.x > Settings.SCREEN_WIDTH - 100
+                || snakeHead.y > Settings.SCREEN_HEIGHT- 100)
+            restartGame();
+
+        // Food check
+        if (snakeHead.x == food.x && snakeHead.y == food.y) collectFood();
+
+        // Tail check
+        if (snake.size() > 4) {
+            for (int i = 1; i < snake.size(); i++) {
+                if (snakeHead.x == snake.get(i).x && snakeHead.y == snake.get(i).y) restartGame();
+            }
         }
+
+    }
+
+    private void collectFood() {
+        // add new snakeTile
+        SnakeTile tile = new SnakeTile(snake.get(snake.size() - 1).x, snake.get(snake.size() - 1).y, 50, 50, GameObject.Type.SNAKE, snake.get(snake.size() - 1).color.brighter(), snake.get(snake.size() - 1));
+        snake.add(tile);
+
+        // TODO - increase score
+
+
+        // change food position
+        food.changePositionRandom();
+
     }
 
     private void moveSnake() {
-        for (GameObject gameObject : snake) {
-            // TODO - move each snake piece
+        for (SnakeTile snakeTile : snake) {
+            if (snakeTile.parentTile == null) {
+                snakeTile.previousPos = new Point2D(snakeTile.x, snakeTile.y);
+                snakeTile.x += movDirection.getX() * movSpeed;
+                snakeTile.y += movDirection.getY() * movSpeed;
+            }
+            else {
+                snakeTile.previousPos = new Point2D(snakeTile.x, snakeTile.y);
+                snakeTile.x = (int) snakeTile.parentTile.previousPos.getX();
+                snakeTile.y = (int) snakeTile.parentTile.previousPos.getY();
+            }
         }
     }
 
     private void repaintCanvas() {
+        graphics.clearRect(0, 0 , Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT);
+
         for (GameObject gameObject : gameObjects) {
-            // TODO - draw on canvas
+            graphics.setStroke(gameObject.color);
             graphics.strokeRect(gameObject.x, gameObject.y, gameObject.width, gameObject.height);
-            System.out.println(gameObject.x);
+        }
+
+        for (GameObject gameObject : snake) {
+            graphics.setFill(gameObject.color);
+            graphics.fillRect(gameObject.x, gameObject.y, gameObject.width, gameObject.height);
         }
 
     }
 
-    private void initializeGameObjects() {
-        gameLoop.start();
-        gameObjects.add(new GameObject(100, 100, 50, 50, GameObject.Type.ENVIRONMENT) {
-        });
 
-
-    }
-
-
-    private void startGame() {
-        initializeGameObjects();
-        gameLoop.start();
-    }
 
 
     public static void main(String[] args) {
