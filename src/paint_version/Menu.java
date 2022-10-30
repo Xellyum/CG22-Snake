@@ -9,75 +9,57 @@ import javafx.scene.layout.VBox;
 
 public class Menu extends VBox {
 
-    Main gameMaster;
+    private Main gameMaster;
+
 
     public Menu(Main master) {
         this.gameMaster = master;
 
-        Label title = new Label("V I P E R");
-        Button startGame = new Button("START");
-        Button exitGame = new Button("EXIT");
+        Label title = new Label("worm");
+        Label difficulty = new Label("CHOOSE DIFFICULTY:");
+
 
         title.setPrefSize(400, 50);
         title.setAlignment(Pos.CENTER);
-        startGame.setPrefSize(400, 50);
-        exitGame.setPrefSize(400, 50);
+        difficulty.setPrefSize(300, 50);
+        difficulty.setAlignment(Pos.CENTER);
 
-        startGame.setOnAction(event -> this.getScene().setRoot(new DifficultyWindow()));
-        exitGame.setOnAction(event -> System.exit(0));
 
-        this.getChildren().addAll(title, startGame, exitGame);
+        HBox difBox = new HBox();
+
+        Button easy = new Button("EASY");
+        Button normal = new Button("NORMAL");
+        Button hard = new Button("HARD");
+
+        easy.setPrefSize(200, 50);
+        normal.setPrefSize(200, 50);
+        hard.setPrefSize(200, 50);
+
+        easy.setOnAction(event -> {
+            Settings.GAME_DIFFICULTY = Settings.Difficulty.EASY;
+            gameMaster.startGame();
+        });
+        normal.setOnAction(event -> {
+            Settings.GAME_DIFFICULTY = Settings.Difficulty.NORMAL;
+            gameMaster.startGame();
+        });
+        hard.setOnAction(event -> {
+            Settings.GAME_DIFFICULTY = Settings.Difficulty.HARD;
+            gameMaster.startGame();
+        });
+
+        difBox.getChildren().addAll(easy, normal, hard);
+        difBox.setAlignment(Pos.CENTER);
+
+
+
+        this.getChildren().addAll(title, difficulty, difBox);
 
         this.setAlignment(Pos.CENTER);
         this.setPadding(new Insets(0, 50, 0, 0));
 
-    }
-
-
-
-
-    private class DifficultyWindow extends HBox {
-
-        public DifficultyWindow() {
-            Label difficultyText = new Label("SELECT DIFFICULTY");
-            Button easy = new Button("EASY");
-            Button normal = new Button("NORMAL");
-            Button hard = new Button("HARD");
-            Button back = new Button("BACK");
-
-
-            difficultyText.setPrefSize(300, 50);
-            difficultyText.setAlignment(Pos.CENTER);
-            easy.setPrefSize(200, 50);
-            normal.setPrefSize(200, 50);
-            hard.setPrefSize(200, 50);
-            back.setPrefSize(300, 50);
-
-
-            easy.setOnAction(event -> {
-                Settings.GAME_DIFFICULTY = Settings.Difficulty.EASY;
-                gameMaster.startGame();
-            });
-            normal.setOnAction(event -> {
-                Settings.GAME_DIFFICULTY = Settings.Difficulty.NORMAL;
-                gameMaster.startGame();
-            });
-            hard.setOnAction(event -> {
-                Settings.GAME_DIFFICULTY = Settings.Difficulty.HARD;
-                gameMaster.startGame();
-            });
-            back.setOnAction(event -> {
-                this.getScene().setRoot(new Menu(gameMaster));
-            });
-
-
-            this.getChildren().addAll(difficultyText, easy, normal, hard, back);
-
-        }
-
 
 
     }
-
 
 }
