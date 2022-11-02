@@ -1,5 +1,7 @@
 package paint_version;
 
+import javafx.scene.text.Font;
+
 public class Settings {
 
     // 4:3 Aspect Ratio
@@ -11,6 +13,8 @@ public class Settings {
 
     public static Difficulty GAME_DIFFICULTY;
     public static int HIGHSCORE = 0;
+
+    public static Font FONT;
 
 
 

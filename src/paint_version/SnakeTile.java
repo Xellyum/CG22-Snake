@@ -7,12 +7,14 @@ import javafx.scene.shape.Rectangle;
 public class SnakeTile extends Rectangle {
 
     private SnakeTile parentTile;
+    private Color color;
 
 
     public SnakeTile(int x, int y, int width, int height, Color color, SnakeTile parentTile) {
         super(x, y, width, height);
         setFill(color);
         this.parentTile = parentTile;
+        this.color = color;
 
     }
 
@@ -28,7 +30,7 @@ public class SnakeTile extends Rectangle {
     }
 
     public Color getColor() {
-        return (Color) getFill();
+        return color;
     }
 
 

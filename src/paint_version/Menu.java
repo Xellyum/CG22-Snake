@@ -6,23 +6,25 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 
 public class Menu extends VBox {
 
     private Main gameMaster;
 
 
-    public Menu(Main master) {
-        this.gameMaster = master;
+    public Menu(Main gameMaster) {
+        this.gameMaster = gameMaster;
 
-        Label title = new Label("worm");
+        Label title = new Label("W O R M");
         Label difficulty = new Label("CHOOSE DIFFICULTY:");
 
-
-        title.setPrefSize(400, 50);
         title.setAlignment(Pos.CENTER);
-        difficulty.setPrefSize(300, 50);
+        title.setPadding(new Insets(0, 0, 50, 0));
         difficulty.setAlignment(Pos.CENTER);
+
+        title.setFont(new Font(Settings.FONT.getName(), 100));
+        difficulty.setFont(new Font(Settings.FONT.getName(), 20));
 
 
         HBox difBox = new HBox();
@@ -31,34 +33,35 @@ public class Menu extends VBox {
         Button normal = new Button("NORMAL");
         Button hard = new Button("HARD");
 
-        easy.setPrefSize(200, 50);
-        normal.setPrefSize(200, 50);
-        hard.setPrefSize(200, 50);
+        easy.setPrefSize(200, 30);
+        normal.setPrefSize(200, 30);
+        hard.setPrefSize(200, 30);
+
+        easy.setFont(new Font(Settings.FONT.getName(), 18));
+        normal.setFont(new Font(Settings.FONT.getName(), 18));
+        hard.setFont(new Font(Settings.FONT.getName(), 18));
 
         easy.setOnAction(event -> {
             Settings.GAME_DIFFICULTY = Settings.Difficulty.EASY;
-            gameMaster.startGame();
+            this.gameMaster.startGame();
         });
         normal.setOnAction(event -> {
             Settings.GAME_DIFFICULTY = Settings.Difficulty.NORMAL;
-            gameMaster.startGame();
+            this.gameMaster.startGame();
         });
         hard.setOnAction(event -> {
             Settings.GAME_DIFFICULTY = Settings.Difficulty.HARD;
-            gameMaster.startGame();
+            this.gameMaster.startGame();
         });
 
-        difBox.getChildren().addAll(easy, normal, hard);
         difBox.setAlignment(Pos.CENTER);
+        difBox.setSpacing(10);
+        difBox.getChildren().addAll(easy, normal, hard);
 
-
-
-        this.getChildren().addAll(title, difficulty, difBox);
 
         this.setAlignment(Pos.CENTER);
-        this.setPadding(new Insets(0, 50, 0, 0));
-
-
+        this.setSpacing(10);
+        this.getChildren().addAll(title, difficulty, difBox);
 
     }
 
