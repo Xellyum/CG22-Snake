@@ -2,37 +2,39 @@ package paint_version;
 
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Game extends Pane {
+public class Game extends StackPane {
 
-    private Main gameMaster;
-    private GraphicsContext graphics;
+    private final Main gameMaster;
+    private final GraphicsContext graphics;
     private boolean gamePaused;
+    private boolean gameOver;
 
     private ArrayList<SnakeTile> snake;
     private Rectangle food;
     private Rectangle wall;
 
     private Point2D movDirection;
-    private int movSpeed = 50;
+    private final int movSpeed = 50;
     private int score;
     private int snakeMoves;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
 
     public Game(Main gameMaster) {
@@ -43,13 +45,15 @@ public class Game extends Pane {
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
+                if (gameOver) return;
                 if (gamePaused) return;
 
                 Settings.UPDATE_DELTA_TIME += 16.6;
                 if (Settings.UPDATE_DELTA_TIME < Settings.UPDATE_RATE / Settings.GAME_DIFFICULTY.getValue()) return;
 
-                Settings.UPDATE_DELTA_TIME = 0;
                 update();
+
+                Settings.UPDATE_DELTA_TIME = 0;
             }
         };
         gameLoop.start();
@@ -105,17 +109,15 @@ public class Game extends Pane {
     }
 
     private void restartGame() {
+        gameOver = false;
         gamePaused = false;
-        if (this.getChildren().size() > 1) this.getChildren().remove(1);
 
         // reset movDirection
         movDirection = new Point2D(0, 0);
 
         // reset score
-        if (score > Settings.HIGHSCORE) Settings.HIGHSCORE = score;
         score = 0;
         snakeMoves = 0;
-
 
         // reset snake
         snake = new ArrayList<>();
@@ -135,14 +137,24 @@ public class Game extends Pane {
     }
 
     private void pauseGame() {
-        // TODO - center PAUSED text
+        if (gameOver) return;
+
         gamePaused = !gamePaused;
 
         if (gamePaused) {
-            graphics.setFont(new Font(Settings.FONT.getName(), 100));
+            graphics.setTextAlign(TextAlignment.CENTER);
+            graphics.setFont(new Font(Settings.FONT.getName(), 48));
             graphics.setFill(Color.GRAY);
-            graphics.fillText("PAUSED", 333,375);
+            graphics.fillText("PAUSED", Settings.SCREEN_WIDTH / 2,Settings.SCREEN_HEIGHT / 2);
         }
+
+    }
+
+    private void gameOver() {
+        gameOver = true;
+        if (score > Settings.HIGHSCORE) Settings.HIGHSCORE = score;
+
+        this.getChildren().add(new DefeatWindow());
 
     }
 
@@ -158,7 +170,6 @@ public class Game extends Pane {
     }
 
     private void checkCollisions() {
-        // TODO - improve defeatWindow
         if (movDirection.magnitude() == 0) return;
 
         SnakeTile snakeHead = snake.get(0);
@@ -171,11 +182,11 @@ public class Game extends Pane {
                 || snakeHead.getY() < 0 + 50
                 || snakeHead.getX() > Settings.SCREEN_WIDTH - 100
                 || snakeHead.getY() > Settings.SCREEN_HEIGHT- 100)
-            this.getChildren().add(new DefeatWindow());
+            gameOver();
 
         // Tail check
         for (int i = 1; i < snake.size(); i++) {
-            if (snakeHead.getX() == snake.get(i).getX() && snakeHead.getY() == snake.get(i).getY()) this.getChildren().add(new DefeatWindow());
+            if (snakeHead.getX() == snake.get(i).getX() && snakeHead.getY() == snake.get(i).getY()) gameOver();
         }
 
     }
@@ -199,10 +210,19 @@ public class Game extends Pane {
                 food.getWidth() / 1, food.getHeight() / 1);
 
         // draw score
+        graphics.setTextAlign(TextAlignment.LEFT);
         graphics.setFont(Settings.FONT);
-        graphics.setFill(Color.GRAY);
+        graphics.setFill(Color.DIMGRAY);
         graphics.fillText("SCORE: " + score, wall.getX(), wall.getY() + wall.getHeight() + 25);
         graphics.fillText("HIGHSCORE: " + Settings.HIGHSCORE, wall.getX() + wall.getWidth() - 240, wall.getY() + wall.getHeight() + 25);
+
+
+        // draw hint
+        if (movDirection.getX() != 0 || movDirection.getY() != 0) return;
+        graphics.setTextAlign(TextAlignment.CENTER);
+        graphics.setFont(new Font(Settings.FONT.getName(), 24));
+        graphics.setFill(Color.GRAY);
+        graphics.fillText("USE W / A / S / D TO MOVE", Settings.SCREEN_WIDTH / 2, Settings.SCREEN_HEIGHT / 1.5);
 
     }
 
@@ -215,12 +235,20 @@ public class Game extends Pane {
 
     private void collectFood() {
         // add new snakeTile
-        SnakeTile tile = new SnakeTile((int) snake.get(snake.size() - 1).getX(), (int) snake.get(snake.size() - 1).getY(), 50, 50, Color.color(snake.get(snake.size() - 1).getColor().getRed() + 0.01, snake.get(snake.size() - 1).getColor().getGreen() + 0.01, snake.get(snake.size() - 1).getColor().getBlue() + 0.01) , snake.get(snake.size() - 1));
+        SnakeTile tile = new SnakeTile(
+                (int) snake.get(snake.size() - 1).getX(),
+                (int) snake.get(snake.size() - 1).getY(),
+                50, 50,
+                Color.color(
+                        snake.get(snake.size() - 1).getColor().getRed() + 0.01,
+                        snake.get(snake.size() - 1).getColor().getGreen() + 0.01,
+                        snake.get(snake.size() - 1).getColor().getBlue() + 0.01) ,
+                snake.get(snake.size() - 1));
         snake.add(tile);
 
         // increase score
-
-        score += 500 / snakeMoves;
+        if (snakeMoves <= 12) score += 50;
+        else score += 50 - (5 * (snakeMoves - 12));
         snakeMoves = 0;
 
         // change food position
@@ -243,53 +271,38 @@ public class Game extends Pane {
 
 
 
-
-    private class PauseWindow extends VBox {
-
-        public PauseWindow() {
-            this.setMinSize(800, 400);
-
-            Button resume = new Button("RESUME");
-            Button changeDif = new Button("CHANGE DIFFICULTY");
-            Button exit = new Button("EXIT GAME");
-
-
-            resume.setPrefSize(200, 50);
-            changeDif.setPrefSize(200, 50);
-            exit.setPrefSize(200, 50);
-
-
-            resume.setOnAction(event -> pauseGame());
-            changeDif.setOnAction(event -> gameMaster.startMenu());
-            exit.setOnAction(event -> System.exit(0));
-
-
-            this.getChildren().addAll(resume, changeDif, exit);
-
-        }
-
-    }
-
     private class DefeatWindow extends VBox {
 
         public DefeatWindow() {
             gamePaused = true;
-            Label defeat = new Label("YOU DIED!");
-            Label scoreText = new Label(String.valueOf(score));
+            Label defeat = new Label("GAME OVER");
+            Label scoreText = new Label("SCORE: " + score);
             Button restart = new Button("RESTART");
-            Button exit = new Button("EXIT GAME");
+            Button exit = new Button("CHANGE DIFFICULTY");
 
+            defeat.setTextFill(Color.DIMGRAY);
+            scoreText.setTextFill(Color.DIMGRAY);
+            restart.setTextFill(Color.DIMGRAY);
+            exit.setTextFill(Color.DIMGRAY);
 
-            restart.setPrefSize(200, 50);
-            exit.setPrefSize(200, 50);
+            defeat.setFont(new Font(Settings.FONT.getName(), 42));
+            scoreText.setFont(new Font(Settings.FONT.getName(), 20));
+            restart.setFont(new Font(Settings.FONT.getName(), 20));
+            exit.setFont(new Font(Settings.FONT.getName(), 20));
+
+            restart.setPrefSize(280,  40);
+            exit.setPrefSize(280, 40);
 
 
             restart.setOnAction(event -> {
+                Game.this.getChildren().remove(1);
                 restartGame();
             });
-            exit.setOnAction(event -> System.exit(0));
+            exit.setOnAction(event -> gameMaster.startMenu());
 
 
+            this.setAlignment(Pos.CENTER);
+            this.setSpacing(10);
             this.getChildren().addAll(defeat, scoreText, restart, exit);
 
         }
@@ -297,6 +310,38 @@ public class Game extends Pane {
 
     }
 
+
+    private class SnakeTile extends Rectangle {
+
+        private SnakeTile parentTile;
+        private Color color;
+
+
+        public SnakeTile(int x, int y, int width, int height, Color color, SnakeTile parentTile) {
+            super(x, y, width, height);
+            setFill(color);
+            this.parentTile = parentTile;
+            this.color = color;
+
+        }
+
+        public void move(Point2D movement) {
+            if (parentTile == null) {
+                setX(getX() + movement.getX());
+                setY(getY() + movement.getY());
+            }
+            else {
+                setX(parentTile.getX());
+                setY(parentTile.getY());
+            }
+        }
+
+        public Color getColor() {
+            return color;
+        }
+
+
+    }
 
 
 }

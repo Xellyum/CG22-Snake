@@ -14,6 +14,8 @@ public class Settings {
     public static Difficulty GAME_DIFFICULTY;
     public static int HIGHSCORE = 0;
 
+
+    // Font from: https://www.wfonts.com/font/pixelmix
     public static Font FONT;
 
 

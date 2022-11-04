@@ -10,7 +10,7 @@ import javafx.scene.text.Font;
 
 public class Menu extends VBox {
 
-    private Main gameMaster;
+    private final Main gameMaster;
 
 
     public Menu(Main gameMaster) {
@@ -19,9 +19,7 @@ public class Menu extends VBox {
         Label title = new Label("W O R M");
         Label difficulty = new Label("CHOOSE DIFFICULTY:");
 
-        title.setAlignment(Pos.CENTER);
         title.setPadding(new Insets(0, 0, 50, 0));
-        difficulty.setAlignment(Pos.CENTER);
 
         title.setFont(new Font(Settings.FONT.getName(), 100));
         difficulty.setFont(new Font(Settings.FONT.getName(), 20));
@@ -33,9 +31,9 @@ public class Menu extends VBox {
         Button normal = new Button("NORMAL");
         Button hard = new Button("HARD");
 
-        easy.setPrefSize(200, 30);
-        normal.setPrefSize(200, 30);
-        hard.setPrefSize(200, 30);
+        easy.setPrefSize(150, 30);
+        normal.setPrefSize(150, 30);
+        hard.setPrefSize(150, 30);
 
         easy.setFont(new Font(Settings.FONT.getName(), 18));
         normal.setFont(new Font(Settings.FONT.getName(), 18));
