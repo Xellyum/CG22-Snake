@@ -19,19 +19,22 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
+        // load font
         InputStream stream = getClass().getResourceAsStream("/paint_version/pixelmix.ttf");
         Settings.FONT = Font.loadFont(stream, 24);
 
         this.stage = stage;
-
-        Scene scene = new Scene(new Pane(), Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT);
-        stage.setScene(scene);
+        stage.setScene(new Scene(new Pane(), Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT));
 
         startMenu();
 
         stage.show();
     }
 
+
+    public Scene getScene() {
+        return stage.getScene();
+    }
 
     public void startMenu() {
         stage.getScene().setRoot(new Menu(this));
@@ -40,7 +43,6 @@ public class Main extends Application {
     public void startGame() {
         stage.getScene().setRoot(new Game(this));
     }
-
 
 
 }

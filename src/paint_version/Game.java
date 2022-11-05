@@ -30,15 +30,17 @@ public class Game extends StackPane {
     private Rectangle wall;
 
     private Point2D movDirection;
-    private final int movSpeed = 50;
-    private int score;
+    private ArrayList<Point2D> movInputQueue;
     private int snakeMoves;
 
+    private int score;
     private final Random random = new Random();
 
 
     public Game(Main gameMaster) {
         this.gameMaster = gameMaster;
+        gameMaster.getScene().setOnKeyPressed(this::setInputActions);
+
         Canvas canvas = new Canvas();
         graphics = canvas.getGraphicsContext2D();
 
@@ -61,30 +63,28 @@ public class Game extends StackPane {
         canvas.setWidth(Settings.SCREEN_WIDTH);
         canvas.setHeight(Settings.SCREEN_HEIGHT);
 
-
         this.getChildren().add(canvas);
 
 
         restartGame();
-
     }
 
 
     private void setInputActions(KeyEvent key) {
         switch (key.getCode()) {
             case W:
-                changeMoveDirection(0, -1);
+                addMovementInput(0, -1);
                 break;
             case A:
-                changeMoveDirection(-1, 0);
+                addMovementInput(-1, 0);
                 break;
 
             case S:
-                changeMoveDirection(0, 1);
+                addMovementInput(0, 1);
                 break;
 
             case D:
-                changeMoveDirection(1, 0);
+                addMovementInput(1, 0);
                 break;
 
             case ESCAPE:
@@ -94,13 +94,16 @@ public class Game extends StackPane {
     }
 
     private void initializeGame() {
-        snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 50 - 25, 50, 50, Color.color(0.10, 0.10, 0.10), null));
+        // add snake
+        snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 25, 50, 50, Color.color(0.10, 0.10, 0.10), null));
         for (int i = 0; i < 4; i++) {
-            snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 50 - 25, 50, 50, Color.color(snake.get(i).getColor().getRed() + 0.01, snake.get(i).getColor().getGreen() + 0.01, snake.get(i).getColor().getBlue() + 0.01), snake.get(i)));
+            snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 25, 50, 50,
+                    Color.color(snake.get(i).getColor().getRed() + 0.01, snake.get(i).getColor().getGreen() + 0.01, snake.get(i).getColor().getBlue() + 0.01), snake.get(i)));
         }
 
         // add wall
-        wall = new Rectangle((Settings.SCREEN_WIDTH % 50) / 2 + 50 - 5, (Settings.SCREEN_HEIGHT % 50) / 2 + 50 - 5, (int)(Settings.SCREEN_WIDTH / 50) * 50 - 100 + 10, (int)(Settings.SCREEN_HEIGHT / 50) * 50 - 100 + 10);
+        wall = new Rectangle((Settings.SCREEN_WIDTH % 50) / 2.0 + 50 - 5, (Settings.SCREEN_HEIGHT % 50) / 2.0 + 50 - 5,
+                (Settings.SCREEN_WIDTH / 50.0) * 50 - 120 + 6, (Settings.SCREEN_HEIGHT / 50.0) * 50 - 120 + 12);
 
         // add food
         food = new Rectangle(0, 0, 25, 25);
@@ -114,6 +117,7 @@ public class Game extends StackPane {
 
         // reset movDirection
         movDirection = new Point2D(0, 0);
+        movInputQueue = new ArrayList<>();
 
         // reset score
         score = 0;
@@ -127,10 +131,6 @@ public class Game extends StackPane {
     }
 
     private void update() {
-        // should not be in update
-        this.getScene().setOnKeyPressed(event -> setInputActions(event));
-
-
         moveSnake();
         checkCollisions();
         repaintCanvas();
@@ -145,7 +145,7 @@ public class Game extends StackPane {
             graphics.setTextAlign(TextAlignment.CENTER);
             graphics.setFont(new Font(Settings.FONT.getName(), 48));
             graphics.setFill(Color.GRAY);
-            graphics.fillText("PAUSED", Settings.SCREEN_WIDTH / 2,Settings.SCREEN_HEIGHT / 2);
+            graphics.fillText("PAUSED", Settings.SCREEN_WIDTH / 2.0,Settings.SCREEN_HEIGHT / 2.0);
         }
 
     }
@@ -160,13 +160,21 @@ public class Game extends StackPane {
 
 
     private void moveSnake() {
+        //System.out.println(movInputQueue);
+
+        if (movInputQueue.size() > 0) {
+            movDirection = movInputQueue.get(0);
+            movInputQueue.remove(0);
+        }
+
         if (movDirection.magnitude() == 0) return;
 
-        for (int i = snake.size() - 1; i >= 0; i--) {
-            snake.get(i).move(movDirection.multiply(movSpeed));
-        }
-        snakeMoves++;
 
+        for (int i = snake.size() - 1; i >= 0; i--) {
+            snake.get(i).move(movDirection.multiply(50));
+        }
+
+        snakeMoves++;
     }
 
     private void checkCollisions() {
@@ -178,8 +186,8 @@ public class Game extends StackPane {
         if (snakeHead.getX() == food.getX() && snakeHead.getY() == food.getY()) collectFood();
 
         // Wall check
-        if (snakeHead.getX() < 0 + 50
-                || snakeHead.getY() < 0 + 50
+        if (snakeHead.getX() < 50
+                || snakeHead.getY() < 50
                 || snakeHead.getX() > Settings.SCREEN_WIDTH - 100
                 || snakeHead.getY() > Settings.SCREEN_HEIGHT- 100)
             gameOver();
@@ -207,7 +215,7 @@ public class Game extends StackPane {
         // draw food
         graphics.setFill(Color.GREEN);
         graphics.fillRoundRect(food.getX() + food.getWidth() / 2, food.getY() + food.getHeight() / 2, food.getWidth(), food.getHeight(),
-                food.getWidth() / 1, food.getHeight() / 1);
+                food.getWidth(), food.getHeight());
 
         // draw score
         graphics.setTextAlign(TextAlignment.LEFT);
@@ -216,21 +224,32 @@ public class Game extends StackPane {
         graphics.fillText("SCORE: " + score, wall.getX(), wall.getY() + wall.getHeight() + 25);
         graphics.fillText("HIGHSCORE: " + Settings.HIGHSCORE, wall.getX() + wall.getWidth() - 240, wall.getY() + wall.getHeight() + 25);
 
-
         // draw hint
-        if (movDirection.getX() != 0 || movDirection.getY() != 0) return;
+        if (movDirection.magnitude() != 0) return;
         graphics.setTextAlign(TextAlignment.CENTER);
         graphics.setFont(new Font(Settings.FONT.getName(), 24));
         graphics.setFill(Color.GRAY);
-        graphics.fillText("USE W / A / S / D TO MOVE", Settings.SCREEN_WIDTH / 2, Settings.SCREEN_HEIGHT / 1.5);
+        graphics.fillText("USE W / A / S / D TO MOVE", Settings.SCREEN_WIDTH / 2.0, Settings.SCREEN_HEIGHT / 1.5);
 
     }
 
 
-    private void changeMoveDirection(int x, int y) {
-        if (movDirection.multiply(-1).getX() == x && movDirection.multiply(-1).getY() == y) return;
+    private void addMovementInput(int x, int y) {
+        // don't add input to queue if: queue size = 3, new movement input == last input in queue, new movement input == opposite current movement Input
+        if (movInputQueue.size() >= 3) return;
 
-        movDirection = new Point2D(x, y);
+        if (movInputQueue.size() == 0) {
+            if (movDirection.multiply(-1).getX() == x && movDirection.multiply(-1).getY() == y) return;
+            if (movDirection.getX() == x && movDirection.getY() == y) return;
+        }
+        else {
+            if (movInputQueue.get(movInputQueue.size() - 1).multiply(-1).getX() == x && movInputQueue.get(movInputQueue.size() - 1).multiply(-1).getY() == y) return;
+            if (movInputQueue.get(movInputQueue.size() - 1).getX() == x && movInputQueue.get(movInputQueue.size() - 1).getY() == y) return;
+        }
+
+
+        movInputQueue.add(new Point2D(x, y));
+
     }
 
     private void collectFood() {
@@ -247,18 +266,17 @@ public class Game extends StackPane {
         snake.add(tile);
 
         // increase score
-        if (snakeMoves <= 12) score += 50;
-        else score += 50 - (5 * (snakeMoves - 12));
+        if (snakeMoves <= 15) score += 50;
+        else score += 50 - (5 * (snakeMoves - 15));
         snakeMoves = 0;
 
-        // change food position
         changeFoodPosition();
 
     }
 
     private void changeFoodPosition() {
-        food.setX(random.nextInt((Settings.SCREEN_WIDTH - 100) / 50) * 50 + (Settings.SCREEN_WIDTH % 50) / 2 + 50);
-        food.setY(random.nextInt((Settings.SCREEN_HEIGHT - 100) / 50) * 50 + (Settings.SCREEN_HEIGHT % 50) / 2 + 50);
+        food.setX(random.nextInt((Settings.SCREEN_WIDTH - 100) / 50) * 50 + (Settings.SCREEN_WIDTH % 50) / 2.0 + 50);
+        food.setY(random.nextInt((Settings.SCREEN_HEIGHT - 100) / 50) * 50 + (Settings.SCREEN_HEIGHT % 50) / 2.0 + 50);
 
         for (SnakeTile tile : snake) {
             if (tile.getX() == food.getX() && tile.getY() == food.getY()) {
@@ -311,17 +329,15 @@ public class Game extends StackPane {
     }
 
 
-    private class SnakeTile extends Rectangle {
+    private static class SnakeTile extends Rectangle {
 
-        private SnakeTile parentTile;
-        private Color color;
+        private final SnakeTile parentTile;
 
 
         public SnakeTile(int x, int y, int width, int height, Color color, SnakeTile parentTile) {
             super(x, y, width, height);
             setFill(color);
             this.parentTile = parentTile;
-            this.color = color;
 
         }
 
@@ -337,7 +353,7 @@ public class Game extends StackPane {
         }
 
         public Color getColor() {
-            return color;
+            return (Color)getFill();
         }
 
 

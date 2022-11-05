@@ -1,4 +1,4 @@
-package node_version;
+package node_version_prototype;
 
 public class Const {
     static final int SCREEN_WIDTH = 800;

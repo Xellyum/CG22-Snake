@@ -1,4 +1,4 @@
-package node_version;
+package node_version_prototype;
 
 import javafx.scene.control.Label;
 
