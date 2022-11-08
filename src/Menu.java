@@ -1,5 +1,3 @@
-package paint_version;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

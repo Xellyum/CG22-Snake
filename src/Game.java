@@ -1,5 +1,3 @@
-package paint_version;
-
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
@@ -95,10 +93,11 @@ public class Game extends StackPane {
 
     private void initializeGame() {
         // add snake
-        snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 25, 50, 50, Color.color(0.10, 0.10, 0.10), null));
+        snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 25, 50, 50, Color.color(0.05, 0.05, 0.05), null));
         for (int i = 0; i < 4; i++) {
-            snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 25, 50, 50,
-                    Color.color(snake.get(i).getColor().getRed() + 0.01, snake.get(i).getColor().getGreen() + 0.01, snake.get(i).getColor().getBlue() + 0.01), snake.get(i)));
+            //snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 25, 50, 50,
+            //        Color.color(snake.get(i).getColor().getRed() + 0.01, snake.get(i).getColor().getGreen() + 0.01, snake.get(i).getColor().getBlue() + 0.01), snake.get(i)));
+            snake.add(new SnakeTile(Settings.SCREEN_WIDTH / 2 - 50, Settings.SCREEN_HEIGHT / 2 - 25, 50, 50, Color.color(0.18, 0.18, 0.18), snake.get(i)));
         }
 
         // add wall
@@ -160,8 +159,6 @@ public class Game extends StackPane {
 
 
     private void moveSnake() {
-        //System.out.println(movInputQueue);
-
         if (movInputQueue.size() > 0) {
             movDirection = movInputQueue.get(0);
             movInputQueue.remove(0);
@@ -214,8 +211,7 @@ public class Game extends StackPane {
 
         // draw food
         graphics.setFill(Color.GREEN);
-        graphics.fillRoundRect(food.getX() + food.getWidth() / 2, food.getY() + food.getHeight() / 2, food.getWidth(), food.getHeight(),
-                food.getWidth(), food.getHeight());
+        graphics.fillRoundRect(food.getX() + food.getWidth() / 2, food.getY() + food.getHeight() / 2, food.getWidth(), food.getHeight(), food.getWidth(), food.getHeight());
 
         // draw score
         graphics.setTextAlign(TextAlignment.LEFT);
@@ -254,15 +250,8 @@ public class Game extends StackPane {
 
     private void collectFood() {
         // add new snakeTile
-        SnakeTile tile = new SnakeTile(
-                (int) snake.get(snake.size() - 1).getX(),
-                (int) snake.get(snake.size() - 1).getY(),
-                50, 50,
-                Color.color(
-                        snake.get(snake.size() - 1).getColor().getRed() + 0.01,
-                        snake.get(snake.size() - 1).getColor().getGreen() + 0.01,
-                        snake.get(snake.size() - 1).getColor().getBlue() + 0.01) ,
-                snake.get(snake.size() - 1));
+        SnakeTile tile = new SnakeTile((int) snake.get(snake.size() - 1).getX(), (int) snake.get(snake.size() - 1).getY(),
+                50, 50, Color.color(0.18, 0.18, 0.18), snake.get(snake.size() - 1));
         snake.add(tile);
 
         // increase score
