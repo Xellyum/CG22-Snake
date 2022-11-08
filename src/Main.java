@@ -1,5 +1,3 @@
-package paint_version;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -20,7 +18,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         // load font
-        InputStream stream = getClass().getResourceAsStream("/paint_version/pixelmix.ttf");
+        InputStream stream = getClass().getResourceAsStream("/pixelmix.ttf");
         Settings.FONT = Font.loadFont(stream, 24);
 
         this.stage = stage;

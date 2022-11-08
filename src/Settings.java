@@ -1,7 +1,8 @@
-package paint_version;
-
 import javafx.scene.text.Font;
 
+/**
+ * Static settings for the game
+ */
 public class Settings {
 
     // 4:3 Aspect Ratio
